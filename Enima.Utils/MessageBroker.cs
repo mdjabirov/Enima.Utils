@@ -84,7 +84,7 @@ namespace Enima.Utils {
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
-                IList<Delegate> handlers = ((IMessageSubscriber<T>)wr.Target).GetHandlers(topic);
+                IList<Delegate> handlers = ((IMessageSubscriber<T>) wr.Target).GetHandlers(topic);
                 if (handlers == null) {
                     return;
                 }
@@ -146,7 +146,7 @@ namespace Enima.Utils {
                 subscribers = new List<WeakReference>();
                 _subscribersByTopic.Add(topic, subscribers);
             }
-            WeakReference wr = subscribers.Find(w => w != null && w.Target == subscriber);
+            WeakReference wr = subscribers.Find(w => w != null && ReferenceEquals(w.Target, subscriber));
             if (wr == null) {
                 wr = new WeakReference(subscriber);
                 subscribers.Add(wr);
@@ -158,7 +158,7 @@ namespace Enima.Utils {
             if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
                 return;
             }
-            WeakReference wr = subscribers.Find(w => w != null && w.Target == subscriber);
+            WeakReference wr = subscribers.Find(w => w != null && ReferenceEquals(w.Target, subscriber));
             if (wr == null) {
                 return;
             }
