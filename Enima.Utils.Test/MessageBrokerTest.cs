@@ -64,6 +64,7 @@ namespace Enima.Utils.Test {
         [Test]
         public void PerformanceTest() {
             _pinger.ManyPings();
+            Assert.AreEqual(_pinger.Sent, _pinger.Self);
         }
 
         private MessageBroker<int> _broker = new MessageBroker<int>();
