@@ -5,17 +5,17 @@ using NUnit.Framework;
 
 namespace Enima.Utils.Test {
     [TestFixture]
-    public class MessageBrokerTest {
+    public class MediatorTest {
         [SetUp]
         public void SetUp() {
-            _pinger = new Pinger(_broker);
-            _ponger = new Ponger(_broker);
+            _pinger = new Pinger(mediator);
+            _ponger = new Ponger(mediator);
         }
 
         [TearDown]
         public void TearDown() {
-            _broker.RemoveSubscriber(_pinger);
-            _broker.RemoveSubscriber(_ponger);
+            mediator.RemoveSubscriber(_pinger);
+            mediator.RemoveSubscriber(_ponger);
         }
 
         [Test]
@@ -25,7 +25,7 @@ namespace Enima.Utils.Test {
             Assert.AreEqual(1, _ponger.GetHandlers(Topic.Ping).Count);
             Assert.AreEqual(1, _ponger.GetHandlers(Topic.Pong).Count);
 
-            _broker.RemoveSubscriber(_ponger);
+            mediator.RemoveSubscriber(_ponger);
             Assert.IsNull(_ponger.GetHandlers(Topic.Ping));
             Assert.IsNull(_ponger.GetHandlers(Topic.Pong));
 
@@ -37,7 +37,7 @@ namespace Enima.Utils.Test {
             Assert.AreEqual(0, _ponger.Sent);
             Assert.AreEqual(0, _ponger.Self);
 
-            _broker.RemoveSubscriber(_pinger);
+            mediator.RemoveSubscriber(_pinger);
             Assert.IsNull(_pinger.GetHandlers(Topic.Ping));
             Assert.IsNull(_pinger.GetHandlers(Topic.Pong));
         }
@@ -67,7 +67,7 @@ namespace Enima.Utils.Test {
             Assert.AreEqual(_pinger.Sent, _pinger.Self);
         }
 
-        private MessageBroker<int> _broker = new MessageBroker<int>();
+        private Mediator<int> mediator = new Mediator<int>();
         private Pinger _pinger;
         private Ponger _ponger;
     }
@@ -88,19 +88,19 @@ namespace Enima.Utils.Test {
         private int _topic;
     }
 
-    public abstract class Player : MessageSubscriber<int> {
-        public Player(IMessageBroker<int> broker) : base(broker) {
-            _broker = broker;
+    public abstract class Player : Subscriber<int> {
+        public Player(IMediator<int> mediator) : base(mediator) {
+            _mediator = mediator;
         }
 
         protected void Send<M>(int topic, M message) {
-            ++_sent;
-            _broker.Send(topic, message);
+            _sent++;
+            _mediator.Send(topic, message);
         }
 
         protected void Post<M>(int topic, M message) {
-            ++_sent;
-            _broker.Post(topic, message);
+            _sent++;
+            _mediator.Post(topic, message);
         }
 
         public long Self => _self;
@@ -110,11 +110,11 @@ namespace Enima.Utils.Test {
         protected long _sent;
         protected long _recd;
 
-        private IMessageBroker<int> _broker;
+        private IMediator<int> _mediator;
     }
 
     public class Pinger : Player {
-        public Pinger(IMessageBroker<int> broker) : base(broker) { }
+        public Pinger(IMediator<int> mediator) : base(mediator) { }
 
         public void Start() {
             int message = 2017;
@@ -155,7 +155,7 @@ namespace Enima.Utils.Test {
     }
 
     public class Ponger : Player {
-        public Ponger(IMessageBroker<int> broker) : base(broker) { }
+        public Ponger(IMediator<int> mediator) : base(mediator) { }
 
         [Handler(Topic.Ping)]
         private void OnPing(int m) {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 
 namespace Enima.Utils {
-    public class MessageSubscriber<T> : IMessageSubscriber<T> {
-        public MessageSubscriber(IMessageBroker<T> messageBroker) {
-            messageBroker.AddSubscriber(this);
+    public class Subscriber<T> : ISubscriber<T> {
+        public Subscriber(IMediator<T> mediator) {
+            mediator.AddSubscriber(this);
         }
 
         public IList<Delegate> GetHandlers(T topic) {

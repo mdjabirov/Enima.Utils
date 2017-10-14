@@ -5,8 +5,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Enima.Utils {
-    public class MessageBroker<T> : IMessageBroker<T> {
-        public MessageBroker() {
+    public class Mediator<T> : IMediator<T> {
+        public Mediator() {
             _defaultScheduler = TaskScheduler.Default;
         }
         
@@ -18,7 +18,7 @@ namespace Enima.Utils {
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
-                IList<Delegate> handlers = ((IMessageSubscriber<T>) wr.Target).GetHandlers(topic);
+                IList<Delegate> handlers = ((ISubscriber<T>) wr.Target).GetHandlers(topic);
                 if (handlers == null) {
                     return;
                 }
@@ -37,7 +37,7 @@ namespace Enima.Utils {
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
-                IList<Delegate> handlers = ((IMessageSubscriber<T>) wr.Target).GetHandlers(topic);
+                IList<Delegate> handlers = ((ISubscriber<T>) wr.Target).GetHandlers(topic);
                 if (handlers == null) {
                     return;
                 }
@@ -60,7 +60,7 @@ namespace Enima.Utils {
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
-                IList<Delegate> handlers = ((IMessageSubscriber<T>) wr.Target).GetHandlers(topic);
+                IList<Delegate> handlers = ((ISubscriber<T>) wr.Target).GetHandlers(topic);
                 if (handlers == null) {
                     return;
                 }
@@ -84,7 +84,7 @@ namespace Enima.Utils {
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
-                IList<Delegate> handlers = ((IMessageSubscriber<T>) wr.Target).GetHandlers(topic);
+                IList<Delegate> handlers = ((ISubscriber<T>) wr.Target).GetHandlers(topic);
                 if (handlers == null) {
                     return;
                 }
@@ -96,7 +96,7 @@ namespace Enima.Utils {
             }
         }
 
-        public void AddSubscriber(IMessageSubscriber<T> subscriber) {
+        public void AddSubscriber(ISubscriber<T> subscriber) {
             // BindingFlags.Static not supported yet
             MethodInfo[] methods = subscriber.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (MethodInfo mi in methods) {
@@ -110,7 +110,7 @@ namespace Enima.Utils {
             }
         }
 
-        public void RemoveSubscriber(IMessageSubscriber<T> subscriber) {
+        public void RemoveSubscriber(ISubscriber<T> subscriber) {
             // BindingFlags.Static not supported yet
             MethodInfo[] methods = subscriber.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (MethodInfo mi in methods) {
@@ -127,7 +127,7 @@ namespace Enima.Utils {
         public bool AddHandler(T topic, Delegate handler) {
             // statics will have null Target - not supported yet
             if (handler != null && handler.Target != null) {
-                var subscriber = (IMessageSubscriber<T>) handler.Target;
+                var subscriber = (ISubscriber<T>) handler.Target;
                 return AddHandlerInternal(topic, subscriber, handler);
             }
             return false;
@@ -136,12 +136,12 @@ namespace Enima.Utils {
         public void RemoveHandler(T topic, Delegate handler) {
             // statics will have null Target - not supported yet
             if (handler != null && handler.Target != null) {
-                var subscriber = (IMessageSubscriber<T>) handler.Target;
+                var subscriber = (ISubscriber<T>) handler.Target;
                 RemoveHandlerInternal(topic, subscriber, handler);
             }
         }
 
-        private bool AddHandlerInternal(T topic, IMessageSubscriber<T> subscriber, Delegate handler) {
+        private bool AddHandlerInternal(T topic, ISubscriber<T> subscriber, Delegate handler) {
             if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
                 subscribers = new List<WeakReference>();
                 _subscribersByTopic.Add(topic, subscribers);
@@ -154,7 +154,7 @@ namespace Enima.Utils {
             return subscriber.AddHandler(topic, handler);
         }
 
-        private void RemoveHandlerInternal(T topic, IMessageSubscriber<T> subscriber, Delegate handler) {
+        private void RemoveHandlerInternal(T topic, ISubscriber<T> subscriber, Delegate handler) {
             if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
                 return;
             }

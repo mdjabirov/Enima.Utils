@@ -41,11 +41,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IHandlerAttribute.cs" />
-    <Compile Include="IMessageBroker.cs" />
-    <Compile Include="IMessageSubscriber.cs" />
+    <Compile Include="IMediator.cs" />
+    <Compile Include="ISubscriber.cs" />
     <Compile Include="ListDictionary.cs" />
-    <Compile Include="MessageBroker.cs" />
-    <Compile Include="MessageSubscriber.cs" />
+    <Compile Include="Mediator.cs" />
+    <Compile Include="Subscriber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
