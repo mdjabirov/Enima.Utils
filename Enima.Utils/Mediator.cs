@@ -9,7 +9,13 @@ namespace Enima.Utils {
         public Mediator() {
             _defaultScheduler = TaskScheduler.Default;
         }
-        
+
+        /// <summary>
+        /// Synchronously calls all topic subscriber handlers having compatible parameter type signature with the message passed
+        /// </summary>
+        /// <typeparam name="M">>The type of messsage argument passed</typeparam>
+        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
+        /// <param name="message">The single message argument passed</param>
         public void Send<M>(T topic, M message) {
             if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
                 return;
@@ -29,6 +35,12 @@ namespace Enima.Utils {
             }
         }
 
+        /// <summary>
+        /// Synchronously calls all topic subscriber handlers having compatible params type signature with the messages array
+        /// </summary>
+        /// <typeparam name="M">The type of messsages in the params array passed</typeparam>
+        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
+        /// <param name="messages">The array of messages passed</param>
         public void SendAll<M>(T topic, params M[] messages) {
             if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
                 return;
@@ -48,6 +60,10 @@ namespace Enima.Utils {
             }
         }
 
+        /// <summary>
+        /// Call all no-argument subscribers for the topic
+        /// </summary>
+        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
         public void Send(T topic) {
             if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
                 return;
