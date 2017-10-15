@@ -69,7 +69,7 @@ namespace Enima.Utils.Test {
         [Test]
         public void PingPongAsyncTest() {
             _pinger.StartAsync();
-            Thread.Sleep(3000);
+            Thread.Sleep(1000);
             Assert.AreEqual(_pinger.Sent, _ponger.Recd);
             Assert.AreEqual(_pinger.Recd, _ponger.Sent);
             Assert.AreEqual(_pinger.Sent, _pinger.Self);
@@ -143,7 +143,7 @@ namespace Enima.Utils.Test {
 
         public void ManyPings() {
             int message = 2017;
-            for (int i = 0; i < 10000000; i++) {
+            for (int i = 0; i < 1000000; i++) {
                 Send(Topic.Ping, message);
             }
         }
@@ -186,7 +186,7 @@ namespace Enima.Utils.Test {
         private void OnPingAsync(int m) {
             _recd++;
             // stop after a while - no fear of a stack overflow so we can play longer
-            if (_recd > 100000) {
+            if (_recd > 10000) {
                 return;
             }
             Post(Topic.Pong, m + 1);
