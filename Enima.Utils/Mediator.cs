@@ -21,7 +21,8 @@ namespace Enima.Utils {
             if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 return;
             }
-            foreach (WeakReference wr in subscribers) {
+            for (int i = 0; i < subscribers.Count; i++) {
+                WeakReference wr = subscribers[i];
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
@@ -29,8 +30,8 @@ namespace Enima.Utils {
                 if (handlers == null) {
                     return;
                 }
-                foreach (Delegate handler in handlers) {
-                    dynamic d = handler;
+                for (int j = 0; j < handlers.Count; j++) {
+                    dynamic d = handlers[j];
                     d(message);
                 }
             }
@@ -47,7 +48,8 @@ namespace Enima.Utils {
             if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 return;
             }
-            foreach (WeakReference wr in subscribers) {
+            for (int i = 0; i < subscribers.Count; i++) {
+                WeakReference wr = subscribers[i];
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
@@ -55,8 +57,8 @@ namespace Enima.Utils {
                 if (handlers == null) {
                     return;
                 }
-                foreach (Delegate handler in handlers) {
-                    dynamic d = handler;
+                for (int j = 0; j < handlers.Count; j++) {
+                    dynamic d = handlers[j];
                     d(messages);
                 }
             }
@@ -71,7 +73,8 @@ namespace Enima.Utils {
             if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 return;
             }
-            foreach (WeakReference wr in subscribers) {
+            for (int i = 0; i < subscribers.Count; i++) {
+                WeakReference wr = subscribers[i];
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
@@ -79,8 +82,8 @@ namespace Enima.Utils {
                 if (handlers == null) {
                     return;
                 }
-                foreach (Delegate handler in handlers) {
-                    dynamic d = handler;
+                for (int j = 0; j < handlers.Count; j++) {
+                    dynamic d = handlers[j];
                     d();
                 }
             }
@@ -144,7 +147,8 @@ namespace Enima.Utils {
             List<Task> tasks = new List<Task>();
             List<WeakReference> subscribers;
             if (_subscribersByTopic.TryGetValue(topic, out subscribers)) {
-                foreach (WeakReference wr in subscribers) {
+                for (int i = 0; i < subscribers.Count; i++) {
+                    WeakReference wr = subscribers[i];
                     if (wr == null || !wr.IsAlive) {
                         continue;
                     }
@@ -152,8 +156,8 @@ namespace Enima.Utils {
                     if (handlers == null) {
                         return Array.Empty<Task>();
                     }
-                    foreach (Delegate handler in handlers) {
-                        dynamic d = handler;
+                    for (int j = 0; j < handlers.Count; j++) {
+                        dynamic d = handlers[j];
                         Task task = new Task(() => d(message));
                         tasks.Add(task);
                         task.Start(_defaultScheduler);
@@ -175,7 +179,8 @@ namespace Enima.Utils {
             List<Task> tasks = new List<Task>();
             List<WeakReference> subscribers;
             if (_subscribersByTopic.TryGetValue(topic, out subscribers)) {
-                foreach (WeakReference wr in subscribers) {
+                for (int i = 0; i < subscribers.Count; i++) {
+                    WeakReference wr = subscribers[i];
                     if (wr == null || !wr.IsAlive) {
                         continue;
                     }
@@ -183,8 +188,8 @@ namespace Enima.Utils {
                     if (handlers == null) {
                         return Array.Empty<Task>();
                     }
-                    foreach (Delegate handler in handlers) {
-                        dynamic d = handler;
+                    for (int j = 0; j < handlers.Count; j++) {
+                        dynamic d = handlers[j];
                         Task task = new Task(() => d(messages));
                         tasks.Add(task);
                         task.Start(_defaultScheduler);
@@ -204,7 +209,8 @@ namespace Enima.Utils {
             List<Task> tasks = new List<Task>();
             List<WeakReference> subscribers;
             if (_subscribersByTopic.TryGetValue(topic, out subscribers)) {
-                foreach (WeakReference wr in subscribers) {
+                for (int i = 0; i < subscribers.Count; i++) {
+                    WeakReference wr = subscribers[i];
                     if (wr == null || !wr.IsAlive) {
                         continue;
                     }
@@ -212,8 +218,8 @@ namespace Enima.Utils {
                     if (handlers == null) {
                         return Array.Empty<Task>();
                     }
-                    foreach (Delegate handler in handlers) {
-                        dynamic d = handler;
+                    for (int j = 0; j < handlers.Count; j++) {
+                        dynamic d = handlers[j];
                         Task task = new Task(() => d());
                         tasks.Add(task);
                         task.Start(_defaultScheduler);
