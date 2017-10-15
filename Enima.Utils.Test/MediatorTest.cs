@@ -19,6 +19,21 @@ namespace Enima.Utils.Test {
         }
 
         [Test]
+        public void SendReceiveTest() {
+            Receiver r = new Receiver(_mediator);
+            _mediator.SendAll(Topic.TopicTwoDoubles, 1.0, 2.5);
+            Assert.AreEqual(3.5, r.TwoDoubles);
+            _mediator.SendAll(Topic.TopicTwoStrings, "Hello", "World");
+            Assert.AreEqual("Hello World", r.TwoStrings);
+            _mediator.SendAll<object>(Topic.TopicAnyObjects, "Hello", "World", '!');
+            Assert.AreEqual(3, r.AnyObjects.Length);
+            _mediator.SendAll<object>(Topic.TopicAnyObjects, "Hello", 2.5);
+            Assert.AreEqual(2, r.AnyObjects.Length);
+            // only TopicAnyObjects has a mixed type receiver
+            Assert.That(() => _mediator.SendAll<object>(Topic.TopicTwoDoubles, "Hello", 2.5), Throws.Exception);
+        }
+
+        [Test]
         public void AddRemoveSubscriberTest() {
             Assert.AreEqual(1, _pinger.GetHandlers(Topic.Ping).Count);
             Assert.AreEqual(1, _pinger.GetHandlers(Topic.Pong).Count);
@@ -186,10 +201,43 @@ namespace Enima.Utils.Test {
         }
     }
 
+    public class Receiver : Subscriber<int> {
+        public Receiver(IMediator<int> mediator) : base(mediator) { }
+
+        [Handler(Topic.TopicTwoStrings)]
+        public void OnTwoStrings(params string[] s) {
+            _twoStrings = string.Concat(s[0], " ", s[1]);
+        }
+
+        [Handler(Topic.TopicTwoDoubles)]
+        public void OnTwoDoubles(params double[] d) {
+            _twoDoubles = d[0] + d[1];
+        }
+
+        [Handler(Topic.TopicAnyObjects)]
+        public void OnAnyObjects(params object[] objects) {
+            _anyObjects = new object[objects.Length];
+            for (int i = 0; i < objects.Length; i++) {
+                _anyObjects[i] = objects[i];
+            }
+        }
+
+        public string TwoStrings => _twoStrings;
+        public double TwoDoubles => _twoDoubles;
+        public object[] AnyObjects => _anyObjects;
+        private string _twoStrings;
+        private double _twoDoubles;
+        private object[] _anyObjects;
+    }
+
     public static class Topic {
         public const int Ping = -1;
         public const int Pong = -2;
         public const int PingAsync = -3;
         public const int PongAsync = -4;
+
+        public const int TopicTwoStrings = 1;
+        public const int TopicTwoDoubles = 2;
+        public const int TopicAnyObjects = 3;
     }
 }
