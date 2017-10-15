@@ -8,14 +8,14 @@ namespace Enima.Utils.Test {
     public class MediatorTest {
         [SetUp]
         public void SetUp() {
-            _pinger = new Pinger(mediator);
-            _ponger = new Ponger(mediator);
+            _pinger = new Pinger(_mediator);
+            _ponger = new Ponger(_mediator);
         }
 
         [TearDown]
         public void TearDown() {
-            mediator.RemoveSubscriber(_pinger);
-            mediator.RemoveSubscriber(_ponger);
+            _mediator.RemoveSubscriber(_pinger);
+            _mediator.RemoveSubscriber(_ponger);
         }
 
         [Test]
@@ -25,7 +25,7 @@ namespace Enima.Utils.Test {
             Assert.AreEqual(1, _ponger.GetHandlers(Topic.Ping).Count);
             Assert.AreEqual(1, _ponger.GetHandlers(Topic.Pong).Count);
 
-            mediator.RemoveSubscriber(_ponger);
+            _mediator.RemoveSubscriber(_ponger);
             Assert.IsNull(_ponger.GetHandlers(Topic.Ping));
             Assert.IsNull(_ponger.GetHandlers(Topic.Pong));
 
@@ -37,7 +37,7 @@ namespace Enima.Utils.Test {
             Assert.AreEqual(0, _ponger.Sent);
             Assert.AreEqual(0, _ponger.Self);
 
-            mediator.RemoveSubscriber(_pinger);
+            _mediator.RemoveSubscriber(_pinger);
             Assert.IsNull(_pinger.GetHandlers(Topic.Ping));
             Assert.IsNull(_pinger.GetHandlers(Topic.Pong));
         }
@@ -67,7 +67,7 @@ namespace Enima.Utils.Test {
             Assert.AreEqual(_pinger.Sent, _pinger.Self);
         }
 
-        private Mediator<int> mediator = new Mediator<int>();
+        private Mediator<int> _mediator = new Mediator<int>();
         private Pinger _pinger;
         private Ponger _ponger;
     }
