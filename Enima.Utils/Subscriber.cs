@@ -46,6 +46,6 @@ namespace Enima.Utils {
             }
         }
 
-        private ListDictionary<T, Delegate> _handlersByTopic = new ListDictionary<T, Delegate>();
+        private readonly ListDictionary<T, Delegate> _handlersByTopic = new ListDictionary<T, Delegate>();
     }
 }

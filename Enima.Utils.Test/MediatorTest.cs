@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Enima.Utils;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Enima.Utils.Test {
@@ -10,17 +10,19 @@ namespace Enima.Utils.Test {
         public void SetUp() {
             _pinger = new Pinger(_mediator);
             _ponger = new Ponger(_mediator);
+            _receiver = new Receiver(_mediator);
         }
 
         [TearDown]
         public void TearDown() {
             _mediator.RemoveSubscriber(_pinger);
             _mediator.RemoveSubscriber(_ponger);
+            _mediator.RemoveSubscriber(_receiver);
         }
 
         [Test]
         public void SendReceiveTest() {
-            Receiver r = new Receiver(_mediator);
+            Receiver r = _receiver;
             _mediator.SendAll(Topic.TopicTwoDoubles, 1.0, 2.5);
             Assert.AreEqual(3.5, r.TwoDoubles);
             _mediator.SendAll(Topic.TopicTwoStrings, "Hello", "World");
@@ -84,9 +86,18 @@ namespace Enima.Utils.Test {
             Assert.AreEqual(_pinger.Sent, _pinger.Self);
         }
 
+        [Test]
+        public void TestPostParallel() {
+            Task[] tasks = _mediator.PostParallel(Topic.TopicParallel, 41);
+            Task.WaitAll(tasks);
+            Assert.AreEqual(41 * 1000000, _receiver.TimesLooped);
+            Assert.AreEqual(165580141, _receiver.FibonacciNumber);
+        }
+
         private Mediator<int> _mediator = new Mediator<int>();
         private Pinger _pinger;
         private Ponger _ponger;
+        private Receiver _receiver;
     }
 
     public sealed class HandlerAttribute : Attribute, IHandlerAttribute<int> {
@@ -234,14 +245,42 @@ namespace Enima.Utils.Test {
             _emptyCalled++;
         }
 
+        [Handler(Topic.TopicParallel)]
+        private void LoopMillionTimes(int n) {
+            int i;
+            for (i = 0; i < n * 1000000; i++) ;
+            _timesLooped = i;
+        }
+
+        [Handler(Topic.TopicParallel)]
+        private ulong Fibonacci(int n) {
+            if (n <= 2) {
+                _fibonacci = 1;
+                return _fibonacci;
+            }
+            ulong prev = 1, next = 1, tmp;
+            for (int i = 2; i < n; i++) {
+                tmp = next;
+                next = next + prev;
+                prev = tmp;
+            }
+            _fibonacci = next;
+            return _fibonacci;
+        }
+
         public string TwoStrings => _twoStrings;
         public double TwoDoubles => _twoDoubles;
         public object[] AnyObjects => _anyObjects;
         public int EmptyCalled => _emptyCalled;
+        public int TimesLooped => _timesLooped;
+        public ulong FibonacciNumber => _fibonacci;
+
         private string _twoStrings;
         private double _twoDoubles;
         private object[] _anyObjects;
         private int _emptyCalled;
+        private ulong _fibonacci = 1;
+        private int _timesLooped;
     }
 
     public static class Topic {
@@ -254,5 +293,6 @@ namespace Enima.Utils.Test {
         public const int TopicTwoDoubles = 2;
         public const int TopicAnyObjects = 3;
         public const int TopicEmpty = 4;
+        public const int TopicParallel = 5;
     }
 }
