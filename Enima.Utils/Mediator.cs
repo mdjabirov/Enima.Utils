@@ -17,7 +17,8 @@ namespace Enima.Utils {
         /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
         /// <param name="message">The single message argument passed</param>
         public void Send<M>(T topic, M message) {
-            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+            List<WeakReference> subscribers;
+            if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 return;
             }
             foreach (WeakReference wr in subscribers) {
@@ -42,7 +43,8 @@ namespace Enima.Utils {
         /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
         /// <param name="messages">The array of messages passed</param>
         public void SendAll<M>(T topic, params M[] messages) {
-            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+            List<WeakReference> subscribers;
+            if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 return;
             }
             foreach (WeakReference wr in subscribers) {
@@ -65,7 +67,8 @@ namespace Enima.Utils {
         /// </summary>
         /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
         public void Send(T topic) {
-            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+            List<WeakReference> subscribers;
+            if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 return;
             }
             foreach (WeakReference wr in subscribers) {
@@ -139,7 +142,8 @@ namespace Enima.Utils {
         /// <returns>The tasks started as an array. One can the WaitAll on them if so desired</returns>
         public Task[] PostParallel<M>(T topic, M message) {
             List<Task> tasks = new List<Task>();
-            if (_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+            List<WeakReference> subscribers;
+            if (_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 foreach (WeakReference wr in subscribers) {
                     if (wr == null || !wr.IsAlive) {
                         continue;
@@ -169,7 +173,8 @@ namespace Enima.Utils {
         /// <returns>The tasks started as an array. One can the WaitAll on them if so desired</returns>
         public Task[] PostParallelAll<M>(T topic, params M[] messages) {
             List<Task> tasks = new List<Task>();
-            if (_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+            List<WeakReference> subscribers;
+            if (_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 foreach (WeakReference wr in subscribers) {
                     if (wr == null || !wr.IsAlive) {
                         continue;
@@ -197,7 +202,8 @@ namespace Enima.Utils {
         /// <returns>he tasks started as an array. One can the WaitAll on them if so desired</returns>
         public Task[] PostParallel(T topic) {
             List<Task> tasks = new List<Task>();
-            if (_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+            List<WeakReference> subscribers;
+            if (_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 foreach (WeakReference wr in subscribers) {
                     if (wr == null || !wr.IsAlive) {
                         continue;
@@ -259,7 +265,8 @@ namespace Enima.Utils {
         }
 
         private bool AddHandler(T topic, ISubscriber<T> subscriber, Delegate handler) {
-            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+            List<WeakReference> subscribers;
+            if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 subscribers = new List<WeakReference>();
                 _subscribersByTopic.Add(topic, subscribers);
             }
@@ -272,7 +279,8 @@ namespace Enima.Utils {
         }
 
         private void RemoveHandler(T topic, ISubscriber<T> subscriber, Delegate handler) {
-            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+            List<WeakReference> subscribers;
+            if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
                 return;
             }
             WeakReference wr = subscribers.Find(w => w != null && ReferenceEquals(w.Target, subscriber));

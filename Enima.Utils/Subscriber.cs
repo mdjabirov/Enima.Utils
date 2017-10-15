@@ -8,7 +8,8 @@ namespace Enima.Utils {
         }
 
         public IList<Delegate> GetHandlers(T topic) {
-            _handlersByTopic.TryGetValue(topic, out List<Delegate> handlers);
+            List<Delegate> handlers;
+            _handlersByTopic.TryGetValue(topic, out handlers);
             return handlers;
         }
 
@@ -20,7 +21,8 @@ namespace Enima.Utils {
             if (!ReferenceEquals(handler.Target, this)) {
                 return false;
             }
-            if (!_handlersByTopic.TryGetValue(topic, out List<Delegate> handlers)) {
+            List<Delegate> handlers;
+            if (!_handlersByTopic.TryGetValue(topic, out handlers)) {
                 handlers = new List<Delegate>();
                 _handlersByTopic.Add(topic, handlers);
             }
@@ -37,7 +39,8 @@ namespace Enima.Utils {
             if (handler == null || handler.Target == null) {
                 return;
             }
-            if (!_handlersByTopic.TryGetValue(topic, out List<Delegate> handlers)) {
+            List<Delegate> handlers;
+            if (!_handlersByTopic.TryGetValue(topic, out handlers)) {
                 return;
             }
             handlers.RemoveAll(h => h.Equals(handler));
