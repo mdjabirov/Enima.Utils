@@ -31,6 +31,8 @@ namespace Enima.Utils.Test {
             Assert.AreEqual(2, r.AnyObjects.Length);
             // only TopicAnyObjects has a mixed type receiver
             Assert.That(() => _mediator.SendAll<object>(Topic.TopicTwoDoubles, "Hello", 2.5), Throws.Exception);
+            _mediator.Send(Topic.TopicEmpty);
+            Assert.AreEqual(2, r.EmptyCalled);
         }
 
         [Test]
@@ -205,29 +207,41 @@ namespace Enima.Utils.Test {
         public Receiver(IMediator<int> mediator) : base(mediator) { }
 
         [Handler(Topic.TopicTwoStrings)]
-        public void OnTwoStrings(params string[] s) {
+        private void OnTwoStrings(params string[] s) {
             _twoStrings = string.Concat(s[0], " ", s[1]);
         }
 
         [Handler(Topic.TopicTwoDoubles)]
-        public void OnTwoDoubles(params double[] d) {
+        private void OnTwoDoubles(params double[] d) {
             _twoDoubles = d[0] + d[1];
         }
 
         [Handler(Topic.TopicAnyObjects)]
-        public void OnAnyObjects(params object[] objects) {
+        private void OnAnyObjects(params object[] objects) {
             _anyObjects = new object[objects.Length];
             for (int i = 0; i < objects.Length; i++) {
                 _anyObjects[i] = objects[i];
             }
         }
 
+        [Handler(Topic.TopicEmpty)]
+        private void OnEmpty1() {
+            _emptyCalled++;
+        }
+
+        [Handler(Topic.TopicEmpty)]
+        private void OnEmpty2() {
+            _emptyCalled++;
+        }
+
         public string TwoStrings => _twoStrings;
         public double TwoDoubles => _twoDoubles;
         public object[] AnyObjects => _anyObjects;
+        public int EmptyCalled => _emptyCalled;
         private string _twoStrings;
         private double _twoDoubles;
         private object[] _anyObjects;
+        private int _emptyCalled;
     }
 
     public static class Topic {
@@ -239,5 +253,6 @@ namespace Enima.Utils.Test {
         public const int TopicTwoStrings = 1;
         public const int TopicTwoDoubles = 2;
         public const int TopicAnyObjects = 3;
+        public const int TopicEmpty = 4;
     }
 }

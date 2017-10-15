@@ -48,6 +48,25 @@ namespace Enima.Utils {
             }
         }
 
+        public void Send(T topic) {
+            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+                return;
+            }
+            foreach (WeakReference wr in subscribers) {
+                if (wr == null || !wr.IsAlive) {
+                    continue;
+                }
+                IList<Delegate> handlers = ((ISubscriber<T>)wr.Target).GetHandlers(topic);
+                if (handlers == null) {
+                    return;
+                }
+                foreach (Delegate handler in handlers) {
+                    dynamic d = handler;
+                    d();
+                }
+            }
+        }
+
         public void Post<M>(T topic, M message) {
             Post(topic, _defaultScheduler, message);
         }
@@ -96,6 +115,30 @@ namespace Enima.Utils {
             }
         }
 
+        public void Post(T topic) {
+            Post(topic, _defaultScheduler);
+        }
+
+        public void Post(T topic, TaskScheduler scheduler) {
+            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
+                return;
+            }
+            foreach (WeakReference wr in subscribers) {
+                if (wr == null || !wr.IsAlive) {
+                    continue;
+                }
+                IList<Delegate> handlers = ((ISubscriber<T>)wr.Target).GetHandlers(topic);
+                if (handlers == null) {
+                    return;
+                }
+                foreach (Delegate handler in handlers) {
+                    dynamic d = handler;
+                    Task task = new Task(() => d());
+                    task.Start(scheduler);
+                }
+            }
+        }
+
         public void AddSubscriber(ISubscriber<T> subscriber) {
             // BindingFlags.Static not supported yet
             MethodInfo[] methods = subscriber.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -105,7 +148,7 @@ namespace Enima.Utils {
                     ParameterInfo[] pi = mi.GetParameters();
                     Type delegateType = GetDelegateType(mi, pi);
                     Delegate handler = Delegate.CreateDelegate(delegateType, subscriber, mi.Name);
-                    AddHandlerInternal(ha.Topic, subscriber, handler);
+                    AddHandler(ha.Topic, subscriber, handler);
                 }
             }
         }
@@ -119,29 +162,12 @@ namespace Enima.Utils {
                     ParameterInfo[] pi = mi.GetParameters();
                     Type delegateType = GetDelegateType(mi, pi);
                     Delegate handler = Delegate.CreateDelegate(delegateType, subscriber, mi.Name);
-                    RemoveHandlerInternal(ha.Topic, subscriber, handler);
+                    RemoveHandler(ha.Topic, subscriber, handler);
                 }
             }
         }
 
-        public bool AddHandler(T topic, Delegate handler) {
-            // statics will have null Target - not supported yet
-            if (handler != null && handler.Target != null) {
-                var subscriber = (ISubscriber<T>) handler.Target;
-                return AddHandlerInternal(topic, subscriber, handler);
-            }
-            return false;
-        }
-
-        public void RemoveHandler(T topic, Delegate handler) {
-            // statics will have null Target - not supported yet
-            if (handler != null && handler.Target != null) {
-                var subscriber = (ISubscriber<T>) handler.Target;
-                RemoveHandlerInternal(topic, subscriber, handler);
-            }
-        }
-
-        private bool AddHandlerInternal(T topic, ISubscriber<T> subscriber, Delegate handler) {
+        private bool AddHandler(T topic, ISubscriber<T> subscriber, Delegate handler) {
             if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
                 subscribers = new List<WeakReference>();
                 _subscribersByTopic.Add(topic, subscribers);
@@ -154,7 +180,7 @@ namespace Enima.Utils {
             return subscriber.AddHandler(topic, handler);
         }
 
-        private void RemoveHandlerInternal(T topic, ISubscriber<T> subscriber, Delegate handler) {
+        private void RemoveHandler(T topic, ISubscriber<T> subscriber, Delegate handler) {
             if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
                 return;
             }
