@@ -13,7 +13,7 @@ namespace Enima.Utils {
         /// <summary>
         /// Synchronously calls all topic subscriber handlers having compatible parameter type signature with the message passed
         /// </summary>
-        /// <typeparam name="M">>The type of messsage argument passed</typeparam>
+        /// <typeparam name="M">The type of messsage argument passed</typeparam>
         /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
         /// <param name="message">The single message argument passed</param>
         public void Send<M>(T topic, M message) {
@@ -36,7 +36,7 @@ namespace Enima.Utils {
         }
 
         /// <summary>
-        /// Synchronously calls all topic subscriber handlers having compatible params type signature with the messages array
+        /// Synchronously calls all topic subscriber handlers having compatible params type signature with the messages array passed
         /// </summary>
         /// <typeparam name="M">The type of messsages in the params array passed</typeparam>
         /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
@@ -82,77 +82,51 @@ namespace Enima.Utils {
                 }
             }
         }
-
-        public void Post<M>(T topic, M message) {
-            Post(topic, _defaultScheduler, message);
+           
+        /// <summary>
+        /// Asynchronous version of <see cref="Send{M}(T, M)"/>
+        /// Starts a task with the TaskScheduler.Default scheduler to call <see cref="Send{M}(T, M)"/>
+        /// </summary>
+        /// <typeparam name="M">The type of messsage argument passed</typeparam>
+        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
+        /// <param name="message">The single message argument passed</param>
+        public Task Post<M>(T topic, M message) {
+            Task task = new Task(() => {
+                Send(topic, message);
+            });
+            task.Start(_defaultScheduler);
+            return task;
         }
 
-        public void Post<M>(T topic, TaskScheduler scheduler, M message) {
-            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
-                return;
-            }
-            foreach (WeakReference wr in subscribers) {
-                if (wr == null || !wr.IsAlive) {
-                    continue;
-                }
-                IList<Delegate> handlers = ((ISubscriber<T>) wr.Target).GetHandlers(topic);
-                if (handlers == null) {
-                    return;
-                }
-                foreach (Delegate handler in handlers) {
-                    dynamic d = handler;
-                    Task task = new Task(() => d(message));
-                    task.Start(scheduler);
-                }
-            }
+        public Task PostAll<M>(T topic, params M[] messages) {
+            Task task = new Task(() => {
+                SendAll(topic, messages);
+            });
+            task.Start(_defaultScheduler);
+            return task;
         }
 
-        public void PostAll<M>(T topic, params M[] messages) {
-            PostAll(topic, _defaultScheduler, messages);
+        public Task Post(T topic) {
+            Task task = new Task(() => {
+                Send(topic);
+            });
+            task.Start(_defaultScheduler);
+            return task;
         }
 
-        public void PostAll<M>(T topic, TaskScheduler scheduler, params M[] messages) {
-            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
-                return;
-            }
-            foreach (WeakReference wr in subscribers) {
-                if (wr == null || !wr.IsAlive) {
-                    continue;
-                }
-                IList<Delegate> handlers = ((ISubscriber<T>) wr.Target).GetHandlers(topic);
-                if (handlers == null) {
-                    return;
-                }
-                foreach (Delegate handler in handlers) {
-                    dynamic d = handler;
-                    Task task = new Task(() => d(messages));
-                    task.Start(scheduler);
-                }
-            }
+        public Task[] PostParallel(T topic) {
+            // TODO:
+            throw new NotImplementedException();
         }
 
-        public void Post(T topic) {
-            Post(topic, _defaultScheduler);
+        public Task[] PostParallel<M>(T topic, M message) {
+            // TODO:
+            throw new NotImplementedException();
         }
 
-        public void Post(T topic, TaskScheduler scheduler) {
-            if (!_subscribersByTopic.TryGetValue(topic, out List<WeakReference> subscribers)) {
-                return;
-            }
-            foreach (WeakReference wr in subscribers) {
-                if (wr == null || !wr.IsAlive) {
-                    continue;
-                }
-                IList<Delegate> handlers = ((ISubscriber<T>)wr.Target).GetHandlers(topic);
-                if (handlers == null) {
-                    return;
-                }
-                foreach (Delegate handler in handlers) {
-                    dynamic d = handler;
-                    Task task = new Task(() => d());
-                    task.Start(scheduler);
-                }
-            }
+        public Task[] PostParallelAll<M>(T topic, params M[] messages) {
+            // TODO:
+            throw new NotImplementedException();
         }
 
         public void AddSubscriber(ISubscriber<T> subscriber) {
