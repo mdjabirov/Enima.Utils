@@ -70,7 +70,10 @@ namespace Enima.Utils.Test {
 
         [Test]
         public void PerformanceTest() {
-            _pinger.ManyPings();
+            // send 10 million pings to self only
+            _mediator.RemoveSubscriber(_ponger);
+            _pinger.ManyPings(10000000);
+            Assert.AreEqual(10000000, _pinger.Self);
             Assert.AreEqual(_pinger.Sent, _pinger.Self);
         }
 

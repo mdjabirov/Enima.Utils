@@ -8,30 +8,38 @@ namespace Enima.Utils {
                 
         /// <summary>
         /// Synchronously calls all topic subscriber handlers having compatible parameter type signature with the message passed
+        /// Compatible handler delegate types are Action<typeparamref name="T1"/> and Action<object[]>
         /// </summary>
-        /// <typeparam name="M">The type of messsage argument passed</typeparam>
-        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
-        /// <param name="message">The single message argument passed</param>
-        public void Send<M>(T topic, M message) {
+        public void Send<T1>(T topic, T1 message) {
             SendInternal(topic, del => {
-                Action<M> action = del as Action<M>;
+                Action<T1> action = del as Action<T1>;
                 if (action != null) {
                     action(message);
+                }
+                else {
+                    Action<object[]> action2 = (Action<object[]>) del;
+                    action2(new object[] { message });
                 }
             } );
         }
 
         /// <summary>
-        /// Synchronously calls all topic subscriber handlers having compatible params type signature with the messages array passed
+        /// Synchronously calls all topic subscriber handlers having compatible params type signature with the args array passed
+        /// Compatible handler delegate types are Action<typeparamref name="T1"[]/> and Action<object[]>
         /// </summary>
-        /// <typeparam name="M">The type of messsages in the params array passed</typeparam>
-        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
-        /// <param name="messages">The array of messages passed</param>
-        public void SendAll<M>(T topic, params M[] messages) {
+        public void SendAll<T1>(T topic, params T1[] args) {
             SendInternal(topic, del => {
-                Action<M[]> action = del as Action<M[]>;
+                Action<T1[]> action = del as Action<T1[]>;
                 if (action != null) {
-                    action(messages);
+                    action(args);
+                }
+                else {
+                    Action<object[]> action2 = (Action<object[]>) del;
+                    object[] messageObjects = new object[args.Length];
+                    for (int i = 0; i < args.Length; i++) {
+                        messageObjects[i] = args[i];
+                    }
+                    action2(messageObjects);
                 }
             });
         }
@@ -42,41 +50,65 @@ namespace Enima.Utils {
         /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
         public void Send(T topic) {
             SendInternal(topic, del => {
-                Action action = del as Action;
-                if (action != null) {
-                    action();
-                }
+                Action action = (Action) del;
+                action();
             });
         }
 
-        public void Send<M1, M2>(T topic, M1 message1, M2 message2) {
+        /// <summary>
+        /// Synchronously calls all topic subscriber handlers having compatible parameter type signature with the message passed
+        /// Compatible handler delegate types are Action<T1, T2> and Action<object[]>
+        /// </summary>
+        public void Send<T1, T2>(T topic, T1 arg1, T2 arg2) {
             SendInternal(topic, del => {
-                Action<M1, M2> action = del as Action<M1, M2>;
+                Action<T1, T2> action = del as Action<T1, T2>;
                 if (action != null) {
-                    action(message1, message2);
+                    action(arg1, arg2);
+                }
+                else {
+                    Action<object[]> action2 = (Action<object[]>) del;
+                    action2(new object[] { arg1, arg2 });
                 }
             });
         }
 
-        public void Send<M1, M2, M3>(T topic, M1 message1, M2 message2, M3 message3) {
+        /// <summary>
+        /// Synchronously calls all topic subscriber handlers having compatible parameter type signature with the message passed
+        /// Compatible handler delegate types are Action<T1, T2, T3> and Action<object[]>
+        /// </summary>
+        public void Send<T1, T2, T3>(T topic, T1 arg1, T2 arg2, T3 arg3) {
             SendInternal(topic, del => {
-                Action<M1, M2, M3> action = del as Action<M1, M2, M3>;
+                Action<T1, T2, T3> action = del as Action<T1, T2, T3>;
                 if (action != null) {
-                    action(message1, message2, message3);
+                    action(arg1, arg2, arg3);
+                }
+                else {
+                    Action<object[]> action2 = (Action<object[]>) del;
+                    action2(new object[] { arg1, arg2, arg3 });
                 }
             });
         }
 
-        public void Send<M1, M2, M3, M4>(T topic, M1 message1, M2 message2, M3 message3, M4 message4) {
+        /// <summary>
+        /// Synchronously calls all topic subscriber handlers having compatible parameter type signature with the message passed
+        /// Compatible handler delegate types are Action<T1, T2, T3, T4> and Action<object[]>
+        /// </summary>
+        public void Send<T1, T2, T3, T4>(T topic, T1 arg1, T2 arg2, T3 arg3, T4 arg4) {
             SendInternal(topic, del => {
-                Action<M1, M2, M3, M4> action = del as Action<M1, M2, M3, M4>;
+                Action<T1, T2, T3, T4> action = del as Action<T1, T2, T3, T4>;
                 if (action != null) {
-                    action(message1, message2, message3, message4);
+                    action(arg1, arg2, arg3, arg4);
+                }
+                else {
+                    Action<object[]> action2 = (Action<object[]>) del;
+                    action2(new object[] { arg1, arg2, arg3, arg4 });
                 }
             });
         }
 
-        // helper method to avoid code repeition in Sends
+        /// <summary>
+        /// For each subscriber interested in the topic, find the handlers for that topic and call the sendAction passed
+        /// </summary>
         protected void SendInternal(T topic, Action<Delegate> sendAction) {
             List<WeakReference> subscribers;
             if (!_subscribersByTopic.TryGetValue(topic, out subscribers)) {
@@ -87,7 +119,7 @@ namespace Enima.Utils {
                 if (wr == null || !wr.IsAlive) {
                     continue;
                 }
-                IList<Delegate> handlers = ((ISubscriber<T>)wr.Target).GetHandlers(topic);
+                IList<Delegate> handlers = ((ISubscriber<T>) wr.Target).GetHandlers(topic);
                 if (handlers == null) {
                     return;
                 }

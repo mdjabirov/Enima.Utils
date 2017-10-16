@@ -4,12 +4,12 @@
             _mediator = mediator;
         }
 
-        protected void Send<M>(int topic, M message) {
+        protected void Send<T1>(int topic, T1 message) {
             Sent++;
             _mediator.Send(topic, message);
         }
 
-        protected void Post<M>(int topic, M message) {
+        protected void Post<T1>(int topic, T1 message) {
 #if NET40
             Sent++;
             _mediator.Post(topic, message);

@@ -1,6 +1,7 @@
 ﻿namespace Enima.Utils.Test {
     public class Pinger : Player {
-        public Pinger(IMediator<int> mediator) : base(mediator) { }
+        public Pinger(IMediator<int> mediator) : base(mediator) {
+        }
 
         public void Start() {
             int message = 2017;
@@ -12,9 +13,9 @@
             Post(Topic.PingAsync, message);
         }
 
-        public void ManyPings() {
+        public void ManyPings(int count) {
             int message = 2017;
-            for (int i = 0; i < 1000000; i++) {
+            for (int i = 0; i < count; i++) {
                 Send(Topic.Ping, message);
             }
         }

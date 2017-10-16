@@ -1,6 +1,7 @@
 ﻿namespace Enima.Utils.Test {
     public class Ponger : Player {
-        public Ponger(IMediator<int> mediator) : base(mediator) { }
+        public Ponger(IMediator<int> mediator) : base(mediator) {
+        }
 
         [Handler(Topic.Ping)]
         private void OnPing(int m) {

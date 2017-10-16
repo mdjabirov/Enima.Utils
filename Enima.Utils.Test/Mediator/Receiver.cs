@@ -1,6 +1,7 @@
 ﻿namespace Enima.Utils.Test {
     public class Receiver : Subscriber<int> {
-        public Receiver(IMediator<int> mediator) : base(mediator) { }
+        public Receiver(IMediator<int> mediator) : base(mediator) {
+        }
 
         [Handler(Topic.TopicTwoStrings)]
         private void OnTwoStrings(params string[] s) {

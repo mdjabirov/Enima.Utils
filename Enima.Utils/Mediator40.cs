@@ -10,32 +10,24 @@ namespace Enima.Utils {
         }
         
         /// <summary>
-        /// Asynchronous version of <see cref="Send{M}(T, M)"/>
-        /// Starts a task with the TaskScheduler.Default scheduler to call <see cref="Send{M}(T, M)"/>
+        /// Asynchronous version of <see cref="Send{T1}(T, T1)"/>
+        /// Starts a task with the TaskScheduler.Default scheduler to call <see cref="Send{T1}(T, T1)"/>
         /// </summary>
-        /// <typeparam name="M">The type of messsage argument passed</typeparam>
-        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
-        /// <param name="message">The single message argument passed</param>
-        /// <returns>The task started</returns>
-        public Task Post<M>(T topic, M message) {
+        public Task Post<T1>(T topic, T1 arg) {
             Task task = new Task(() => {
-                Send(topic, message);
+                Send(topic, arg);
             });
             task.Start(_defaultScheduler);
             return task;
         }
 
         /// <summary>
-        /// Asynchronous version of <see cref="SendAll{M}(T, M[])"/>
-        /// Starts a task with the TaskScheduler.Default scheduler to call <see cref="SendAll{M}(T, M[])"/>
+        /// Asynchronous version of <see cref="SendAll{T1}(T, T1[])"/>
+        /// Starts a task with the TaskScheduler.Default scheduler to call <see cref="SendAll{T1}(T, T1[])"/>
         /// </summary>
-        /// <typeparam name="M">The type of messsages in the params array passed</typeparam>
-        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
-        /// <param name="messages">The array of messages passed</param>
-        /// <returns>The task started</returns>
-        public Task PostAll<M>(T topic, params M[] messages) {
+        public Task PostAll<T1>(T topic, params T1[] args) {
             Task task = new Task(() => {
-                SendAll(topic, messages);
+                SendAll(topic, args);
             });
             task.Start(_defaultScheduler);
             return task;
@@ -45,8 +37,6 @@ namespace Enima.Utils {
         /// Asyncrhonous version of <see cref="Send(T)"/>
         /// Starts a task with the TaskScheduler.Default scheduler to call <see cref="Send(T)"/>
         /// </summary>
-        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
-        /// <returns>The task started</returns>
         public Task Post(T topic) {
             Task task = new Task(() => {
                 Send(topic);
@@ -56,14 +46,10 @@ namespace Enima.Utils {
         }
 
         /// <summary>
-        /// Parallel version of <see cref="Post{M}(T, M)"/>
+        /// Parallel version of <see cref="Post{T1}(T, T1)"/>
         /// Unlike Post which executes asyncrhounously in one task, each handler of each subscriber for the topic spawns a task
         /// </summary>
-        /// <typeparam name="M">The type of messsage argument passed</typeparam>
-        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
-        /// <param name="message">The single message argument passed</param>
-        /// <returns>The tasks started as an array. One can the WaitAll on them if so desired</returns>
-        public Task[] PostParallel<M>(T topic, M message) {
+        public Task[] PostParallel<T1>(T topic, T1 arg) {
             List<Task> tasks = new List<Task>();
             List<WeakReference> subscribers;
             if (_subscribersByTopic.TryGetValue(topic, out subscribers)) {
@@ -78,7 +64,7 @@ namespace Enima.Utils {
                     }
                     for (int j = 0; j < handlers.Count; j++) {
                         dynamic d = handlers[j];
-                        Task task = new Task(() => d(message));
+                        Task task = new Task(() => d(arg));
                         tasks.Add(task);
                         task.Start(_defaultScheduler);
                     }
@@ -88,14 +74,10 @@ namespace Enima.Utils {
         }
 
         /// <summary>
-        /// Parallel version of <see cref="PostAll{M}(T, M[])"/>
+        /// Parallel version of <see cref="PostAll{T1}(T, T1[])"/>
         /// Unlike PostAll which executes asyncrhounously in one task, each handler of each subscriber the for topic spawns a task
         /// </summary>
-        /// <typeparam name="M">The type of messsages in the params array passed</typeparam>
-        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
-        /// <param name="messages">The array of messages passed</param>
-        /// <returns>The tasks started as an array. One can the WaitAll on them if so desired</returns>
-        public Task[] PostParallelAll<M>(T topic, params M[] messages) {
+        public Task[] PostParallelAll<T1>(T topic, params T1[] args) {
             List<Task> tasks = new List<Task>();
             List<WeakReference> subscribers;
             if (_subscribersByTopic.TryGetValue(topic, out subscribers)) {
@@ -110,7 +92,7 @@ namespace Enima.Utils {
                     }
                     for (int j = 0; j < handlers.Count; j++) {
                         dynamic d = handlers[j];
-                        Task task = new Task(() => d(messages));
+                        Task task = new Task(() => d(args));
                         tasks.Add(task);
                         task.Start(_defaultScheduler);
                     }
@@ -123,8 +105,6 @@ namespace Enima.Utils {
         /// Parallel version of <see cref="Post(T)"/>
         /// Unlike Post which executes asyncrhounously in one task, each handler of each subscriber the for topic spawns a task
         /// </summary>
-        /// <param name="topic">The topic in which subscriber handlers might be interested in</param>
-        /// <returns>he tasks started as an array. One can the WaitAll on them if so desired</returns>
         public Task[] PostParallel(T topic) {
             List<Task> tasks = new List<Task>();
             List<WeakReference> subscribers;
